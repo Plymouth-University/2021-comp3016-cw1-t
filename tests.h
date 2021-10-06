@@ -20,120 +20,173 @@ TEST_CASE( "STD 1: Creating a FileReader object"  ) {
 TEST_CASE( "STD 2: Opening File from data folder"  ) {
     FileReader reader = FileReader();
 
-    CHECK( reader.openFile("data/simple.dae") == true );
+    CHECK( reader.openFile("data/simple.ply") == true );
 }
 
 TEST_CASE("STD 3: Closing File from data folder" ) {
     FileReader reader = FileReader();
-    reader.openFile("data/simple.dae");
-    CHECK(reader.closeFile("data/simple.dae") == true);
+    reader.openFile("data/simple.ply");
+    CHECK(reader.closeFile("data/simple.ply") == true);
+    CHECK(reader.closeFile("data/simple.ply") == false);
 }
 
 TEST_CASE("STD 4: Closing currently open File" ) {
     FileReader reader = FileReader();
-    reader.openFile("data/simple.dae");
+    reader.openFile("data/simple.ply");
     CHECK(reader.closeCurrentFile() == true);
+    CHECK(reader.closeCurrentFile() == false);
 }
 
-TEST_CASE("STD 5: Opening and Reading a simple DAE File") {
+TEST_CASE("STD 5: Opening and Reading a simple PLY File") {
     FileReader reader = FileReader();
-    std::string fileName = "data/simple.dae";
+    std::string fileName = "data/simple.ply";
     reader.openFile(fileName);
     std::string checkName = reader.currentFile();
   
     CHECK(checkName.compare(checkName.size() - fileName.size(), fileName.size(), fileName) == 0);
-    std::vector<std::string> lines = reader.getLines(0, 187);
-    
-    CHECK(lines.size() == 188);
+    std::vector<std::string> lines = reader.getLines(0, 55);
+    std::string comparison = "-0.500000 0.500000 -0.500000 -1.000000 0.000000 0.000000 0.595141 0.509132 255 255 255 255";
+    CHECK(lines.size() == 55);
+    CHECK(lines[40].compare(comparison) == 0);
+
+    CHECK(reader.lineCount() == 57);
+
     reader.closeCurrentFile();
 }
 
-TEST_CASE("STD 6: Opening and Reading a large DAE File and trying to load too many lines.") {
+TEST_CASE("STD 6: Opening and Reading a large PLY File and trying to load lines.") {
     FileReader reader = FileReader();
-    std::string fileName = "data/large.dae";
+    std::string fileName = "data/large.ply";
     CHECK(reader.openFile(fileName) == true);
     std::string checkName = reader.currentFile();
 
     CHECK(checkName.compare(checkName.size() - fileName.size(), fileName.size(), fileName) == 0);
-    CHECK(reader.getLines(0, 300).size() > 0); //going beyond the length of the file on purpose
-    std::vector<std::string> lines = reader.getLines(0, 300);
+    CHECK(reader.getLine(117910).length() == 0); //going beyond the length of the file on purpose
+   
+    CHECK(reader.lineCount() == 117907);
 
-    CHECK(lines.size() == 203);
+    std::string line = reader.getLine(117904);
+    std::string comparison = "3 44876 44874 44885";
+    REQUIRE(line.length() > 1);
+    CHECK(line.compare(comparison) == 0);
     reader.closeCurrentFile();
 }
 
-TEST_CASE("STD 7: Trying to get a node from a simple dae file") {
+TEST_CASE("STD 7: Trying to get an element from a simple PLY file") {
     FileReader reader = FileReader();
-    std::string fileName = "data/simple.dae";
+    std::string fileName = "data/simple.ply";
     CHECK(reader.openFile(fileName) == true);
     
-    std::vector<std::string> lines = reader.inspectForFirst("geometry");
-    std::string comparison = "<geometry id=\"Box_Mesh_345357280_002-mesh\" name=\"Box_Mesh_345357280.002\">";
-    REQUIRE(lines.size() > 1);
-    CHECK(lines[0].compare(comparison)==0); //going beyond the length of the file on purpose
-    comparison = "    </source>";
-    CHECK(lines[30].compare(comparison) == 0);
+    std::vector<std::string> lines = reader.getElement("vertex");
+    std::string comparison = "0.500000 -0.500000 -0.500000 0.000000 0.000000 -1.000000 0.593540 -0.000303 255 255 255 255";
+    REQUIRE(lines.size() >= 1);
+    CHECK(lines[0].compare(comparison)==0); 
+
+    lines = reader.getElement("vertex");
+    REQUIRE(lines.size() >= 1);
+    CHECK(lines[0].compare(comparison) == 0);
+
+    lines = reader.getNextElement("vertex"); // moves cursor
+    std::string comparison2 = "-0.500000 0.500000 -0.500000 0.000000 0.000000 -1.000000 0.340409 0.249793 255 255 255 255";
+    REQUIRE(lines.size() >= 1);
+    CHECK(lines[0].compare(comparison2) == 0); 
+
+    reader.resetElement("vertex"); //resetting cursor be beginning of vertrices
+    lines = reader.getElement("vertex");
+    REQUIRE(lines.size() >= 1);
+    CHECK(lines[0].compare(comparison) == 0);
     reader.closeCurrentFile();
 }
 
-TEST_CASE("STD 8: Trying to get a node and subnode from a simple dae file") {
+TEST_CASE("STD 8: Trying to get an element and attribute from a simple PLY file") {
     FileReader reader = FileReader();
-    std::string fileName = "data/simple.dae";
+    std::string fileName = "data/simple3.ply";
     CHECK(reader.openFile(fileName) == true);
 
-    std::vector<std::string> lines = reader.inspectForFirst("geometry","triangles");
-    REQUIRE(lines.size() > 1);
-    std::string comparison = "<triangles material=\"Material_004-material\" count=\"12\">";
-    CHECK(lines[0].compare(comparison) == 0); //going beyond the length of the file on purpose
-    comparison = "  <input semantic=\"NORMAL\" source=\"#Box_Mesh_345357280_002-mesh-normals\" offset=\"1\"/>";
-    CHECK(lines[2].compare(comparison) == 0);
+    std::string line = reader.getElementAttribute("vertex","red");
+    REQUIRE(line.length() > 1);
+    std::string comparison = "138";
+    CHECK(line.compare(comparison) == 0); 
+
+    std::string line = reader.getElementAttribute("vertex", "green");
+    REQUIRE(line.length() > 1);
+    comparison = "70";
+    CHECK(line.compare(comparison) == 0);
+
+    std::string line = reader.getElementAttribute("vertex", "omega");
+    REQUIRE(line.length() >= 0);
+    comparison = "";
+    CHECK(line.compare(comparison) == 0);
+
     reader.closeCurrentFile();
 }
 
 
-TEST_CASE("STD 9: Trying to get a node attribute from a simple dae file") {
+TEST_CASE("STD 9: Trying to get an element attribute from a simple PLY file") {
     FileReader reader = FileReader();
-    std::string fileName = "data/simple.dae";
+    std::string fileName = "data/simple3.ply";
     CHECK(reader.openFile(fileName) == true);
 
-    std::string value = reader.inspectForFirstAttribute("geometry", "name");
-    std::string comparison = "Box_Mesh_345357280.002";
-    CHECK(value.compare(comparison) == 0); //going beyond the length of the file on purpose
-    value = reader.inspectForFirstAttribute("geometry", "id");
-    comparison = "Box_Mesh_345357280_002-mesh";
+    std::string value = reader.getElementAttribute("face", "vertex_indices");
+    std::string comparison = "98";
+    value = reader.getNextElementAttribute("face", "vertex_indices");
+    comparison = "99";
+    CHECK(value.compare(comparison) == 0); 
+    value = reader.getNextElementAttribute("face", "vertex_indices");
+    comparison = "100";
     CHECK(value.compare(comparison) == 0);
+    value = reader.getNextElementAttribute("face", "vertex_indices");
+    comparison = "";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.getNextElement("face");
+    value = reader.getElementAttribute("face", "vertex_indices");
+    comparison = "101";
+    CHECK(value.compare(comparison) == 0);
+    reader.resetElement("face");
+    value = reader.getElementAttribute("face", "vertex_indices");
+    comparison = "98";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getElementAttribute("face", 5,"vertex_indices");
+    comparison = "113";
+    CHECK(value.compare(comparison) == 0);
+
+
     reader.closeCurrentFile();
 }
 
-
-TEST_CASE("STD 10: Trying to get a node attribute from a simple dae file") {
+TEST_CASE("STD 10: Opening and Reading a large PLY File and trying to load too many lines.") {
     FileReader reader = FileReader();
-    std::string fileName = "data/simple.dae";
+    std::string fileName = "data/large.ply";
     CHECK(reader.openFile(fileName) == true);
+    std::string checkName = reader.currentFile();
 
-    std::string value = reader.inspectForFirstAttribute("instance_geometry", "url");
-    std::string comparison = "#Box_Mesh_345357280_002-mesh";
-    CHECK(value.compare(comparison) == 0); //going beyond the length of the file on purpose
-    value = reader.inspectForFirstAttribute("instance_geometry", "name");
-    comparison = "Box_Mesh_345357280.002";
-    CHECK(value.compare(comparison) == 0);
+    CHECK(checkName.compare(checkName.size() - fileName.size(), fileName.size(), fileName) == 0);
+    CHECK(reader.getLines(0, 117910).size() > 0); //going beyond the length of the file on purpose
+    std::vector<std::string> lines = reader.getLines(0, 117910);
+
+    CHECK(lines.size() == 117905);
     reader.closeCurrentFile();
 }
 
 TEST_CASE("STD 11: Opening an invalid File from data folder") {
     FileReader reader = FileReader();
     //wrong file name supplied
-    CHECK(reader.openFile("data/simples.dae") == false);
-    CHECK(reader.readFile("data/simples.dae") == false);
+    CHECK(reader.openFile("data/simples.ply") == false);
+    CHECK(reader.openFile("data/simple3.pl") == false);
+    CHECK(reader.openFile("data/simple.fbx") == false);
+    CHECK(reader.openFile("data/ simple3.ply") == false);
 }
 
 TEST_CASE("STD 12: Checking repeated Operations") {
     FileReader reader = FileReader();
-
-    reader.openFile("data/simple.dae");
-    CHECK(reader.readFile("data/simple.dae") == true);
-    CHECK(reader.readFile("data/simple.dae") == true);
-    reader.closeFile("data/simple.dae");
+    reader.openFile("data/simple.ply");
+    CHECK(reader.closeCurrentFile() == true);
+    CHECK(reader.closeCurrentFile() == false);
+    reader.openFile("data/simple-tex.ply");
+    CHECK(reader.closeFile("data/simple.ply") == false);
+    CHECK(reader.closeCurrentFile() == true);
     CHECK(reader.currentFile().empty());
     CHECK(reader.getLines(0, 1).size() == 0);
 }
@@ -142,41 +195,39 @@ TEST_CASE("STD 13: Multiple Files Can be Loaded and Inspected for their Elements
     FileReader reader = FileReader();
 
     //inspecting first file
-    reader.openFile("data/simple.dae");
-    reader.readFile("data/simple.dae");
-    std::string value = reader.inspectForFirstAttribute("instance_geometry", "url");
-    std::string comparison = "#Box_Mesh_345357280_002-mesh";
-    CHECK(value.compare(comparison) == 0); //going beyond the length of the file on purpose
-    value = reader.inspectForFirstAttribute("instance_geometry", "name");
-    comparison = "Box_Mesh_345357280.002";
-    CHECK(value.compare(comparison) == 0);
+    std::string fileName = "data/simple3.ply";
+    CHECK(reader.openFile(fileName) == true);
 
+    std::string line = reader.getElementAttribute("vertex", "red");
+    REQUIRE(line.length() > 1);
+    std::string comparison = "97";
+    CHECK(line.compare(comparison) == 0);
 
     //inspecting second file
-    reader.openFile("data/advanced.dae");
-    reader.readFile("data/advanced.dae");
-    value = reader.inspectForFirstAttribute("geometry", "name");
-    comparison = "Cube.12_1.001";
-    CHECK(value.compare(comparison) == 0); 
-    std::vector<std::string> lines = reader.inspectForFirst("geometry", "technique_common");
-    REQUIRE(lines.size() > 1);
-    comparison = "  <accessor source=\"#Cube_12_1_001-mesh-positions-array\" count=\"8\" stride=\"3\">";
-    CHECK(lines[1].compare(comparison) == 0); 
+    reader.openFile("data/simple.ply");
+    line = reader.getElementAttribute("vertex", "red");
+    REQUIRE(line.length() > 1);
+    std::string comparison = "255";
+    CHECK(line.compare(comparison) == 0);
 
-    CHECK(reader.closeFile("data/simple.dae"));
-    CHECK(reader.readFile("data/simple.dae") == false);
-    CHECK(reader.currentFile().compare("data/advanced.dae") == 0);
-    CHECK(reader.getLines(0, 10).size() == 11);
+
+    CHECK(reader.switchCurrentFile("data/simple3.ply"));
+    line = reader.getElementAttribute("vertex", "alpha");
+    REQUIRE(line.length() > 1);
+    std::string comparison = "255";
+    CHECK(line.compare(comparison) == 0);
+
+    reader.closeCurrentFile();
     reader.closeCurrentFile();
 }
 
-TEST_CASE("STD 14: Checking Large File") {
+TEST_CASE("STD 14: Checking Another Large File") {
     FileReader reader = FileReader();
 
-    REQUIRE(reader.openFile("data/large.dae"));
-    CHECK(reader.readFile("data/large.dae") == true);
-    std::string value = reader.inspectForFirstAttribute("instance_material", "target");
-    std::string comparison = "#Leather_pouf-material";
+    REQUIRE(reader.openFile("data/LowPolyBoat-coloured.ply"));
+
+    std::string value = reader.getElementAttribute("face", "red");
+    std::string comparison = "57";
     CHECK(value.compare(comparison) == 0);
     reader.closeCurrentFile();
 }
@@ -187,24 +238,29 @@ TEST_CASE("STD 14: Checking Large File") {
 TEST_CASE("ADV 1: Checking repeated Operations 2") {
     FileReader reader = FileReader();
 
-    reader.openFile("data/simple.dae");
-    CHECK(reader.readFile("data/simple.dae") == true);
-    reader.closeFile("data/simple.dae");
+    reader.openFile("data/simple.ply");
+    CHECK(reader.switchCurrentFile("data/simple.ply") == true);
+    reader.closeFile("data/simple.ply");
     CHECK(reader.currentFile().empty());
-    CHECK(reader.openFile("data/simple.dae") == true);
-    CHECK(reader.openFile("data/simple.dae") == false);
-    CHECK(reader.currentFile().compare("data/simple.dae") == 0);
-    CHECK(reader.getLines(0, 187)[100].compare("            </index_of_refraction>") == 0);//FIXIT!
+    CHECK(reader.openFile("data/simple.ply") == true);
+    CHECK(reader.openFile("data/simple.ply") == false);
+    CHECK(reader.currentFile().compare("data/simple.ply") == 0);
+    CHECK(reader.openFile("data/simple3.ply") == true);
+    CHECK(reader.openFile("data/simple.ply") == false);
+
+    CHECK(reader.getLines(0, 212)[100].compare("-0.5 -0.5 0.2499999 -0.7071068 -0.7071068 0 80 113 58 255") == 0);
     CHECK(reader.closeCurrentFile());
-    CHECK(reader.closeCurrentFile() == false);
+    CHECK(reader.closeCurrentFile() == true);
 }
 
 TEST_CASE("ADV 2: Checking repeated Operations 3") {
     FileReader reader = FileReader();
 
-    reader.openFile("data/simple.dae");
-    CHECK(reader.openFile("data/advanced.dae") == true);
-    CHECK(reader.currentFile().compare("data/advanced.dae") == 0);
+    reader.openFile("data/LowPolyBoat-coloured.ply");
+    CHECK(reader.openFile("data/LowPolyBoat-coloured.ply") == false);
+    CHECK(reader.currentFile().compare("data/LowPolyBoat-coloured.ply") == 0);
+    CHECK(reader.openFile("data/simple-high-res.ply") == false);
+    CHECK(reader.currentFile().compare("data/simple-high-res.ply") == 0);
     CHECK(reader.getLines(0, 1).size() > 0);
     CHECK(reader.closeCurrentFile());
     CHECK(reader.closeCurrentFile());
@@ -213,90 +269,36 @@ TEST_CASE("ADV 2: Checking repeated Operations 3") {
 TEST_CASE("ADV 3: Checking repeated Operations 4") {
     FileReader reader = FileReader();
 
-    reader.openFile("data/simple.dae");
-    reader.openFile("data/advanced.dae");
-    CHECK(reader.closeFile("data/simple.dae"));
-    CHECK(reader.currentFile().compare("data/advanced.dae") == 0);
-    CHECK(reader.getLines(0, 1).size() > 0);
-    CHECK(reader.closeCurrentFile());
+    reader.openFile("data/simple.ply");
+    reader.openFile("data/advanced.ply");
+    CHECK(reader.closeFile("data/simple.ply"));
     CHECK(reader.currentFile().empty());
+    CHECK(reader.closeCurrentFile()==false);
 }
 
 TEST_CASE("ADV 4: Checking repeated Operations 5") {
     FileReader reader = FileReader();
 
-    reader.openFile("data/simple.dae");
-    reader.openFile("data/advanced.dae");
-    CHECK(reader.closeFile("data/advanced.dae"));
-    CHECK(reader.currentFile().compare("data/simple.dae") == 0);
+    reader.openFile("data/simple.ply");
+    reader.openFile("data/simple-highres.ply");
+    CHECK(reader.closeFile("data/simple.ply"));
+    CHECK(reader.currentFile().compare("data/simple-highres.ply") == 0);
     CHECK(reader.getLines(0, 1).size() > 0);
     CHECK(reader.closeCurrentFile());
     CHECK(reader.currentFile().empty());
 }
 
 
-TEST_CASE("ADV 5: Trying to get a web-resource") {
+TEST_CASE("ADV 5: Loading Irregular file") {
     FileReader reader = FileReader();
-    std::string fileName = "http://swen.fairrats.eu/research/webby.dae";
-    CHECK(reader.openFile(fileName) == true);
-    CHECK(reader.readFile(fileName) == true);
-    std::vector<std::string> lines = reader.inspectForFirst("geometry", "mesh");
-    REQUIRE(lines.size() > 1);
-    std::string comparison = "  <source id=\"Creeper-mesh-positions\">";
-    CHECK(lines[1].compare(comparison) == 0);
-    CHECK(reader.closeCurrentFile());
-}
-
-TEST_CASE("ADV 6: Loading Irregular file") {
-    FileReader reader = FileReader();
-    std::string fileName = "http://swen.fairrats.eu/research/corrupt.dae";
+    std::string fileName = "data/corrupt.ply";
     CHECK(reader.openFile(fileName) == true);
     REQUIRE(reader.getLines(0, 187).size() > 1);
-    CHECK(reader.getLines(0, 187)[49].compare("        </technique>") == 0);
+    CHECK(reader.getLines(0, 187)[188].compare("-0.5 -0.2500001 0.3749999 -1 0 0 80 113 58 255") == 0);
+    std::string line = reader.getElementAttribute("vertex", "blue");
+    REQUIRE(line.length() == 0);
+    line = reader.getElementAttribute("vertex", "red");
+    std::string comparison = "97";
+    CHECK(line.compare(comparison) == 0);
     CHECK(reader.closeCurrentFile());
-}
-
-
-/*
-* The specific content check in this method will be potentiall be
-* updated a day before the deadline. But the calls will all stay the same.
-*/
-TEST_CASE("ADV 7: Trying to get a web-resource") {
-    FileReader reader = FileReader();
-
-
-    std::string urlFile = "http://swen.fairrats.eu/research/webby.dae";
-    CHECK(reader.openFile(urlFile) == true);
-    CHECK(reader.readFile(urlFile) == true);
-
-    std::string value = reader.inspectForFirstAttribute("effect", "id");
-    std::string comparison = "Material_004-effect";
-    CHECK(value.compare(comparison) == 0); 
-    value = reader.inspectForFirstAttribute("effect", "technique","sid");
-    comparison = "common";
-    CHECK(value.compare(comparison) == 0);
-    value = reader.inspectForFirstAttribute("geometry", "source", "id");
-    comparison = "Creeper-mesh-positions";
-    CHECK(value.compare(comparison) == 0);
-
-
-    //inspecting second file
-    reader.openFile("data/advanced.dae");
-    reader.readFile("data/advanced.dae");
-
-    value = reader.inspectForFirstAttribute("geometry", "name");
-    comparison = "Cube.12_1.001";
-    CHECK(value.compare(comparison) == 0);
-    std::vector<std::string> lines = reader.inspectForFirst("geometry", "technique_common");
-    REQUIRE(lines.size() > 1);
-    comparison = "  <accessor source=\"#Cube_12_1_001-mesh-positions-array\" count=\"8\" stride=\"3\">";
-    CHECK(lines[1].compare(comparison) == 0);
-
-    CHECK(reader.closeFile(urlFile));
-    CHECK(reader.readFile(urlFile) == false);
-    CHECK(reader.currentFile().compare("data/advanced.dae") == 0);
-
-    CHECK(reader.getLines(0, 10).size() == 11);
-    CHECK(reader.closeCurrentFile());
-    CHECK(reader.currentFile().empty());
 }
