@@ -46,7 +46,7 @@ TEST_CASE("STD 5: Opening and Reading a simple PLY File") {
     CHECK(checkName.compare(checkName.size() - fileName.size(), fileName.size(), fileName) == 0);
     std::vector<std::string> lines = reader.getLines(0, 55);
     std::string comparison = "-0.500000 0.500000 -0.500000 -1.000000 0.000000 0.000000 0.595141 0.509132 255 255 255 255";
-    CHECK(lines.size() == 55);
+    REQUIRE(lines.size() == 55);
     CHECK(lines[40].compare(comparison) == 0);
 
     CHECK(reader.lineCount() == 57);
@@ -63,7 +63,7 @@ TEST_CASE("STD 6: Opening and Reading a large PLY File and trying to load lines.
     CHECK(checkName.compare(checkName.size() - fileName.size(), fileName.size(), fileName) == 0);
     CHECK(reader.getLine(117910).length() == 0); //going beyond the length of the file on purpose
    
-    CHECK(reader.lineCount() == 117907);
+    REQUIRE(reader.lineCount() == 117907);
 
     std::string line = reader.getLine(117904);
     std::string comparison = "3 44876 44874 44885";
