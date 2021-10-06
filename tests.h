@@ -108,12 +108,12 @@ TEST_CASE("STD 8: Trying to get an element and attribute from a simple PLY file"
     std::string comparison = "138";
     CHECK(line.compare(comparison) == 0); 
 
-    std::string line = reader.getElementAttribute("vertex", "green");
+    line = reader.getElementAttribute("vertex", "green");
     REQUIRE(line.length() > 1);
     comparison = "70";
     CHECK(line.compare(comparison) == 0);
 
-    std::string line = reader.getElementAttribute("vertex", "omega");
+    line = reader.getElementAttribute("vertex", "omega");
     REQUIRE(line.length() >= 0);
     comparison = "";
     CHECK(line.compare(comparison) == 0);
@@ -207,14 +207,14 @@ TEST_CASE("STD 13: Multiple Files Can be Loaded and Inspected for their Elements
     reader.openFile("data/simple.ply");
     line = reader.getElementAttribute("vertex", "red");
     REQUIRE(line.length() > 1);
-    std::string comparison = "255";
+    comparison = "255";
     CHECK(line.compare(comparison) == 0);
 
 
     CHECK(reader.switchCurrentFile("data/simple3.ply"));
     line = reader.getElementAttribute("vertex", "alpha");
     REQUIRE(line.length() > 1);
-    std::string comparison = "255";
+    comparison = "255";
     CHECK(line.compare(comparison) == 0);
 
     reader.closeCurrentFile();
