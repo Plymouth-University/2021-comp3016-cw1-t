@@ -105,12 +105,12 @@ TEST_CASE("STD 8: Trying to get an element and attribute from a simple PLY file"
 
     std::string line = reader.getElementAttribute("vertex","red");
     REQUIRE(line.length() > 1);
-    std::string comparison = "138";
+    std::string comparison = "97";
     CHECK(line.compare(comparison) == 0); 
 
     line = reader.getElementAttribute("vertex", "green");
     REQUIRE(line.length() > 1);
-    comparison = "70";
+    comparison = "138";
     CHECK(line.compare(comparison) == 0);
 
     line = reader.getElementAttribute("vertex", "omega");
