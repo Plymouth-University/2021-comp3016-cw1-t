@@ -280,9 +280,9 @@ TEST_CASE("ADV 4: Checking repeated Operations 5") {
     FileReader reader = FileReader();
 
     reader.openFile("data/simple.ply");
-    reader.openFile("data/simple-highres.ply");
+    reader.openFile("data/simple-high-res.ply");
     CHECK(reader.closeFile("data/simple.ply"));
-    CHECK(reader.currentFile().compare("data/simple-highres.ply") == 0);
+    CHECK(reader.currentFile().compare("data/simple-high-res.ply") == 0);
     CHECK(reader.getLines(0, 1).size() > 0);
     CHECK(reader.closeCurrentFile());
     CHECK(reader.currentFile().empty());
