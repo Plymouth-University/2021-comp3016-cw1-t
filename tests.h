@@ -226,7 +226,7 @@ TEST_CASE("STD 14: Checking Another Large File") {
 
     REQUIRE(reader.openFile("data/LowPolyBoat-coloured.ply"));
 
-    std::string value = reader.getElementAttribute("face", "red");
+    std::string value = reader.getElementAttribute("face", "green");
     std::string comparison = "57";
     CHECK(value.compare(comparison) == 0);
     reader.closeCurrentFile();
@@ -294,7 +294,7 @@ TEST_CASE("ADV 5: Loading Irregular file") {
     std::string fileName = "data/corrupt.ply";
     CHECK(reader.openFile(fileName) == true);
     REQUIRE(reader.getLines(0, 187).size() > 1);
-    CHECK(reader.getLines(0, 187)[188].compare("-0.5 -0.2500001 0.3749999 -1 0 0 80 113 58 255") == 0);
+    CHECK(reader.getLines(0, 190)[188].compare("0.5 0.125 -0.375 1 0 0 80 113 58 255") == 0);
     std::string line = reader.getElementAttribute("vertex", "blue");
     REQUIRE(line.length() == 0);
     line = reader.getElementAttribute("vertex", "red");
