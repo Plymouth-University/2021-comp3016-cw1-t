@@ -248,7 +248,7 @@ TEST_CASE("ADV 1: Checking repeated Operations 2") {
     CHECK(reader.openFile("data/simple3.ply") == true);
     CHECK(reader.openFile("data/simple.ply") == false);
 
-    CHECK(reader.getLines(0, 212)[100].compare("0.5 -0.25 0.25 1 0 0 75 106 54 255") == 0);
+    CHECK(reader.getLines(0, 212)[102].compare("0.5 -0.25 0.25 1 0 0 75 106 54 255") == 0);
     CHECK(reader.closeCurrentFile());
     CHECK(reader.closeCurrentFile() == true);
 }
