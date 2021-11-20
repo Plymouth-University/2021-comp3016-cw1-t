@@ -248,7 +248,7 @@ TEST_CASE("ADV 1: Checking repeated Operations 2") {
     CHECK(reader.openFile("data/simple3.ply") == true);
     CHECK(reader.openFile("data/simple.ply") == false);
 
-    CHECK(reader.getLines(0, 212)[100].compare("-0.5 -0.5 0.2499999 -0.7071068 -0.7071068 0 80 113 58 255") == 0);
+    CHECK(reader.getLines(0, 212)[100].compare("0.5 -0.25 0.25 1 0 0 75 106 54 255") == 0);
     CHECK(reader.closeCurrentFile());
     CHECK(reader.closeCurrentFile() == true);
 }
@@ -259,7 +259,7 @@ TEST_CASE("ADV 2: Checking repeated Operations 3") {
     reader.openFile("data/LowPolyBoat-coloured.ply");
     CHECK(reader.openFile("data/LowPolyBoat-coloured.ply") == false);
     CHECK(reader.currentFile().compare("data/LowPolyBoat-coloured.ply") == 0);
-    CHECK(reader.openFile("data/simple-high-res.ply") == false);
+    CHECK(reader.openFile("data/simple-high-res.ply") == true);
     CHECK(reader.currentFile().compare("data/simple-high-res.ply") == 0);
     CHECK(reader.getLines(0, 1).size() > 0);
     CHECK(reader.closeCurrentFile());
@@ -272,6 +272,7 @@ TEST_CASE("ADV 3: Checking repeated Operations 4") {
     reader.openFile("data/simple.ply");
     reader.openFile("data/advanced.ply");
     CHECK(reader.closeFile("data/simple.ply"));
+	 CHECK(reader.closeFile("data/advanced.ply"));
     CHECK(reader.currentFile().empty());
     CHECK(reader.closeCurrentFile()==false);
 }
