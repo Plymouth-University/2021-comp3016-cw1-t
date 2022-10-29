@@ -298,3 +298,213 @@ TEST_CASE("ADV 2: Checking Additional items in File") {
 
     reader.closeCurrentFile();
 }
+
+TEST_CASE("ADV 3: Trying to get element attributes from an GLTF file") {
+    FileReader reader = FileReader();
+    std::string fileName = "data/cube.gltf";
+    CHECK(reader.openFile(fileName) == true);
+
+    std::string value = reader.getElementAttribute("mesh", "name");
+    std::string comparison = "Cube";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getNextElementAttribute("mesh", "name");
+    comparison = "";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getElementAttribute("accessor", "bufferView");
+    comparison = "0";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.getNextElement("accessor");
+    value = reader.getElementAttribute("accessor", "bufferView");
+    comparison = "1";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getNextElementAttribute("accessor", "bufferView");
+    comparison = "";
+    CHECK(value.compare(comparison) == 0);
+
+    std::vector<std::string> complex = reader.getElement("accessor");
+    comparison = "\"count\" : 24,";
+    CHECK(value.compare(complex[2]) == 0);
+
+    complex = reader.getNextElement("accessor");
+    comparison = "\"componentType\" : 5126,";
+    CHECK(value.compare(complex[1]) == 0);
+
+    complex = reader.getElement("bufferView");
+    comparison = "\"buffer\" : 0,";
+    CHECK(value.compare(complex[0]) == 0);
+    comparison = "";
+    CHECK(value.compare(complex[4]) == 0);
+
+    reader.closeCurrentFile();
+}
+
+TEST_CASE("ADV 4: Opening incorrect as well as lots of files from data folder") {
+    FileReader reader = FileReader();
+    //wrong file name supplied
+    CHECK(reader.openFile("data/cube. gltf") == false);
+    CHECK(reader.openFile("data/cube.dae") == false);
+    CHECK(reader.openFile("data/cube.obj") == true);
+    CHECK(reader.openFile("data/cube.gltf") == true);
+    CHECK(reader.openFile("data/pouf.obj") == true);
+    CHECK(reader.openFile("data/pouf.gltf") == true);
+    CHECK(reader.openFile("data/boat.obj") == true);
+    CHECK(reader.openFile("data/boat.gltf") == true);
+    CHECK(reader.openFile("data/cube.obj") == false);
+}
+
+TEST_CASE("ADV 5: Opening and Reading a large GLTF File and trying to load a lot.") {
+    FileReader reader = FileReader();
+    std::string fileName = "data/boat.gltf";
+    CHECK(reader.openFile(fileName) == true);
+
+    std::string value = reader.getElementAttribute("mesh", "name");
+    std::string comparison = "Floor:1";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.getNextElement("mesh");
+    value = reader.getNextElementAttribute("mesh", "name");
+    comparison = "";
+    CHECK(value.compare(comparison) == 0);
+    value = reader.getElementAttribute("mesh", "name");
+    comparison = "Body";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getElementAttribute("mesh", "rotation");
+    comparison = "0.7071068286895752";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.getElement("mesh",66);
+    value = reader.getElementAttribute("mesh", "name");
+    comparison = "Cylinder_12";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getElementAttribute("mesh", "rotation");
+    comparison = "0.7071068286895752";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getNextElementAttribute("mesh", "rotation");
+    comparison = "0";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getNextElementAttribute("mesh", "rotation");
+    comparison = "0";
+    CHECK(value.compare(comparison) == 0);
+
+    std::vector<std::string> complex = reader.getElement("accessor",0);
+    comparison = "\"count\" : 306";
+    CHECK(value.compare(complex[2]) == 0);
+
+    value = reader.getElementAttribute("accessor","max");
+    comparison = "59.13680648803711";
+    CHECK(value.compare(value) == 0);
+
+    value = reader.getNextElementAttribute("accessor", "max");
+    comparison = "98.21562957763672";
+    CHECK(value.compare(value) == 0);
+
+    reader.getNextElement("accessor");
+    value = reader.getElementAttribute("accessor", "max");
+    comparison = "";
+    CHECK(value.compare(value) == 0);
+
+    value = reader.getElementAttribute("accessor", "type");
+    comparison = "VEC3";
+    CHECK(value.compare(value) == 0);
+
+    reader.getNextElement("accessor");
+    value = reader.getElementAttribute("accessor", "type");
+    comparison = "VEC2";
+    CHECK(value.compare(value) == 0);
+
+    reader.getNextElement("accessor");
+    value = reader.getElementAttribute("accessor", "type");
+    comparison = "SCALAR";
+    CHECK(value.compare(value) == 0);
+    reader.closeCurrentFile();
+}
+
+TEST_CASE("ADV 6: Checking Multiple items in Files") {
+    FileReader reader = FileReader();
+
+    REQUIRE(reader.openFile("data/pouf.gltf"));
+    REQUIRE(reader.openFile("data/cube.obj"));
+    CHECK(reader.switchCurrentFile("data/cube.obj") == true);
+    std::string comparison = "18/21/6 1/23/6 5/24/6";
+
+    std::string value = reader.getElementAttribute("object", 11, "face");
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getElementAttribute("object", "face");
+    CHECK(value.compare(comparison) == 0);
+
+    CHECK(reader.switchCurrentFile("data/cube.gltf") == false);
+    REQUIRE(reader.openFile("data/cube.gltf"));
+
+    std::string value = reader.getElementAttribute("mesh", "name");
+    std::string comparison = "Cube";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.getNextElement("mesh");
+    value = reader.getNextElementAttribute("mesh", "name");
+    comparison = "";
+
+    CHECK(value.compare(comparison) == 0);
+    value = reader.getElementAttribute("material", "doubleSided");
+    comparison = "true";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getElementAttribute("material", "name");
+    comparison = "Material";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.closeCurrentFile();
+    reader.closeCurrentFile();
+    CHECK(reader.closeCurrentFile());
+}
+
+
+TEST_CASE("ADV 7: Complex Deep Checks which dive into Properties.") {
+    FileReader reader = FileReader();
+    std::string fileName = "data/cube.gltf";
+    CHECK(reader.openFile(fileName) == true);
+
+    std::string value = reader.getElementAttribute("material", "name");
+    std::string comparison = "Material";
+    REQUIRE(value.compare(comparison) == 0); 
+    
+    value = reader.getElementAttribute("material", "pbrMetallicRoughness_baseColorFactor");
+    comparison = "0.800000011920929";
+    REQUIRE(value.compare(comparison) == 0);
+
+    value = reader.getNextElementAttribute("material", "pbrMetallicRoughness_baseColorFactor");
+    comparison = "0.800000011920929";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getElementAttribute("mesh", "primitives_attributes");
+    comparison = "\"POSITION\" : 0,";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getNextElementAttribute("mesh", "primitives_attributes");
+    comparison = "\"NORMAL\" : 1,";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.resetElementAttribute("mesh", "primitives_attributes");
+    value = reader.getElementAttribute("mesh", "primitives_attributes");
+    comparison = "\"POSITION\" : 0,";
+    CHECK(value.compare(comparison) == 0);
+
+    value = reader.getElementAttribute("mesh", "primitives_attributes_POSITION");
+    comparison = "0";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.getNextElement("mesh");
+    value = reader.getElementAttribute("mesh", "primitives_attributes_POSITION");
+    comparison = "";
+    CHECK(value.compare(comparison) == 0);
+
+    reader.closeCurrentFile();
+}
