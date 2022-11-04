@@ -444,8 +444,8 @@ TEST_CASE("ADV 6: Checking Multiple items in Files") {
     CHECK(reader.switchCurrentFile("data/cube.gltf") == false);
     REQUIRE(reader.openFile("data/cube.gltf"));
 
-    std::string value = reader.getElementAttribute("mesh", "name");
-    std::string comparison = "Cube";
+    value = reader.getElementAttribute("mesh", "name");
+    comparison = "Cube";
     CHECK(value.compare(comparison) == 0);
 
     reader.getNextElement("mesh");
