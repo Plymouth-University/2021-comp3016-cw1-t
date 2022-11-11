@@ -327,17 +327,17 @@ TEST_CASE("ADV 3: Trying to get element attributes from an GLTF file") {
 
     std::vector<std::string> complex = reader.getElement("accessor");
     comparison = "\"count\" : 24,";
-    CHECK(value.compare(complex[2]) == 0);
+    CHECK(comparison.compare(complex[2]) == 0);
 
     complex = reader.getNextElement("accessor");
     comparison = "\"componentType\" : 5126,";
-    CHECK(value.compare(complex[1]) == 0);
+    CHECK(comparison.compare(complex[1]) == 0);
 
     complex = reader.getElement("bufferView");
     comparison = "\"buffer\" : 0,";
-    CHECK(value.compare(complex[0]) == 0);
+    CHECK(comparison.compare(complex[0]) == 0);
     comparison = "";
-    CHECK(value.compare(complex[4]) == 0);
+    CHECK(comparison.compare(complex[4]) == 0);
 
     reader.closeCurrentFile();
 }
