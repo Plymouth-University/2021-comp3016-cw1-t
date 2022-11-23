@@ -395,7 +395,7 @@ TEST_CASE("ADV 5: Opening and Reading a large GLTF File and trying to load a lot
     CHECK(value.compare(comparison) == 0);
 
     std::vector<std::string> complex = reader.getElement("accessor",0);
-    comparison = "\"count\" : 306";
+    comparison = "\"count\" : 306,";
     CHECK(complex[2].compare(comparison) == 0);
 
     value = reader.getElementAttribute("accessor","max");
