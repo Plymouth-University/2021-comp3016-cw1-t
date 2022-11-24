@@ -418,7 +418,7 @@ TEST_CASE("ADV 5: Opening and Reading a large GLTF File and trying to load a lot
 
     value = reader.getElementAttribute("accessor", "type");
     comparison = "VEC3";
-    CHECK(value.compare(value) == 0);
+    CHECK(comparison.compare(value) == 0);
 
     reader.getNextElement("accessor");
     value = reader.getElementAttribute("accessor", "type");
@@ -456,8 +456,8 @@ TEST_CASE("ADV 6: Checking Multiple items in Files") {
     reader.getNextElement("mesh");
     value = reader.getNextElementAttribute("mesh", "name");
     comparison = "";
-
     CHECK(value.compare(comparison) == 0);
+
     value = reader.getElementAttribute("material", "doubleSided");
     comparison = "true";
     CHECK(value.compare(comparison) == 0);
