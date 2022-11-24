@@ -327,16 +327,20 @@ TEST_CASE("ADV 3: Trying to get element attributes from an GLTF file") {
 
     std::vector<std::string> complex = reader.getElement("accessor");
     comparison = "\"count\" : 24,";
+    REQUIRE(complex.size() > 2);
     CHECK(comparison.compare(complex[2]) == 0);
 
     complex = reader.getNextElement("accessor");
     comparison = "\"componentType\" : 5126,";
+    REQUIRE(complex.size() > 1);
     CHECK(comparison.compare(complex[1]) == 0);
 
     complex = reader.getElement("bufferView");
     comparison = "\"buffer\" : 0,";
+    REQUIRE(complex.size() > 1);
     CHECK(comparison.compare(complex[0]) == 0);
     comparison = "";
+    REQUIRE(complex.size() > 3);
     CHECK(comparison.compare(complex[4]) == 0);
 
     reader.closeCurrentFile();
@@ -396,6 +400,7 @@ TEST_CASE("ADV 5: Opening and Reading a large GLTF File and trying to load a lot
 
     std::vector<std::string> complex = reader.getElement("accessor",0);
     comparison = "\"count\" : 306,";
+    REQUIRE(complex.size() > 1);
     CHECK(complex[2].compare(comparison) == 0);
 
     value = reader.getElementAttribute("accessor","max");
