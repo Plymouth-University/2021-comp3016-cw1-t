@@ -327,16 +327,20 @@ TEST_CASE("ADV 3: Trying to get element attributes from an GLTF file") {
 
     std::vector<std::string> complex = reader.getElement("accessor");
     comparison = "\"count\" : 24,";
+    REQUIRE(complex.size() > 2);
     CHECK(comparison.compare(complex[2]) == 0);
 
     complex = reader.getNextElement("accessor");
     comparison = "\"componentType\" : 5126,";
+    REQUIRE(complex.size() > 1);
     CHECK(comparison.compare(complex[1]) == 0);
 
     complex = reader.getElement("bufferView");
     comparison = "\"buffer\" : 0,";
+    REQUIRE(complex.size() > 1);
     CHECK(comparison.compare(complex[0]) == 0);
     comparison = "";
+    REQUIRE(complex.size() > 3);
     CHECK(comparison.compare(complex[4]) == 0);
 
     reader.closeCurrentFile();
@@ -395,21 +399,22 @@ TEST_CASE("ADV 5: Opening and Reading a large GLTF File and trying to load a lot
     CHECK(value.compare(comparison) == 0);
 
     std::vector<std::string> complex = reader.getElement("accessor",0);
-    comparison = "\"count\" : 306";
-    CHECK(value.compare(complex[2]) == 0);
+    comparison = "\"count\" : 306,";
+    REQUIRE(complex.size() > 1);
+    CHECK(complex[2].compare(comparison) == 0);
 
     value = reader.getElementAttribute("accessor","max");
     comparison = "59.13680648803711";
-    CHECK(value.compare(value) == 0);
+    CHECK(comparison.compare(value) == 0);
 
     value = reader.getNextElementAttribute("accessor", "max");
     comparison = "98.21562957763672";
-    CHECK(value.compare(value) == 0);
+    CHECK(comparison.compare(value) == 0);
 
     reader.getNextElement("accessor");
     value = reader.getElementAttribute("accessor", "max");
     comparison = "";
-    CHECK(value.compare(value) == 0);
+    CHECK(comparison.compare(value) == 0);
 
     value = reader.getElementAttribute("accessor", "type");
     comparison = "VEC3";
@@ -418,12 +423,12 @@ TEST_CASE("ADV 5: Opening and Reading a large GLTF File and trying to load a lot
     reader.getNextElement("accessor");
     value = reader.getElementAttribute("accessor", "type");
     comparison = "VEC2";
-    CHECK(value.compare(value) == 0);
+    CHECK(comparison.compare(value) == 0);
 
     reader.getNextElement("accessor");
     value = reader.getElementAttribute("accessor", "type");
     comparison = "SCALAR";
-    CHECK(value.compare(value) == 0);
+    CHECK(comparison.compare(value) == 0);
     reader.closeCurrentFile();
 }
 
